@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
+import static org.junit.Assert.assertTrue;
 /**
  *
  * @author douglasdean
@@ -166,6 +167,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "CR-Franklin");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
    
     JsonNode testNodeData = mapper.readTree(new File("test-cases/CR-Franklin.json"));
@@ -188,6 +190,9 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "cr-franklin");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    
+    verifyStopByRouteStructure(resource);
+    
     RouteInfo route = new RouteInfo(resource);
     JsonNode testNodeData = mapper.readTree(new File("test-cases/CR-Franklin.json"));
     RouteInfo testRoute = new RouteInfo(testNodeData);
@@ -209,6 +214,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "Green-B");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
     
     JsonNode testNodeData = mapper.readTree(new File("test-cases/Green-B.json"));
@@ -230,6 +236,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "Green-B");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
     
     JsonNode testNodeData = mapper.readTree(new File("test-cases/Green-B-bad.json"));
@@ -252,6 +259,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "38");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
     
     JsonNode testNodeData = mapper.readTree(new File("test-cases/Route38.json"));
@@ -274,6 +282,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "Boat-F1");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
     
     JsonNode testNodeData = mapper.readTree(new File("test-cases/Boat-F1.json"));
@@ -298,6 +307,7 @@ public class basicRestTests {
     final HttpUriRequest request = new HttpGet(url + "CR-Franklin");
     final HttpResponse response = HttpClientBuilder.create().build().execute(request);
     final JsonNode resource = getJsonInfo.retrieveResourceFromResponse(response);
+    verifyStopByRouteStructure(resource);
     RouteInfo route = new RouteInfo(resource);
    
     HttpUriRequest requestStop = new HttpGet(urlSchedByStop + "&stop=" + route.lstDirections.get(0).lstStops.get(12).getStopId() + "&route=Cr-Franklin&direction=0");
@@ -359,6 +369,33 @@ public class basicRestTests {
         assertEquals(liveTest.lstDirections.get(x).lstStops.get(y).getParenStationName(), goldTest.lstDirections.get(x).lstStops.get(y).getParenStationName());
         assertEquals(liveTest.lstDirections.get(x).lstStops.get(y).getStopLat(), goldTest.lstDirections.get(x).lstStops.get(y).getStopLat());
         assertEquals(liveTest.lstDirections.get(x).lstStops.get(y).getstopLon(), goldTest.lstDirections.get(x).lstStops.get(y).getstopLon());
+      }
+    }
+  }
+  
+  /**
+   * Used to verify that the structure of the returned Json is the correct structure
+   * @param tmpNode 
+   */
+  
+  void verifyStopByRouteStructure(JsonNode tmpNode){
+    assertTrue(tmpNode.path("direction").isArray());
+    tmpNode = tmpNode.path("direction");
+    for (JsonNode node : tmpNode) {
+      assertEquals(node.size(),3);
+      assertTrue(node.has("direction_id"));
+      assertTrue(node.has("direction_name"));
+      JsonNode verNode = node.path("stop");
+      assertTrue(verNode.isArray());
+      for(JsonNode stpNode : verNode){
+        assertEquals(stpNode.size(), 7);
+        assertTrue(stpNode.has("stop_order"));
+        assertTrue(stpNode.has("stop_id"));
+        assertTrue(stpNode.has("stop_name"));
+        assertTrue(stpNode.has("parent_station"));
+        assertTrue(stpNode.has("parent_station_name"));
+        assertTrue(stpNode.has("stop_lat"));
+        assertTrue(stpNode.has("stop_lon"));
       }
     }
   }
